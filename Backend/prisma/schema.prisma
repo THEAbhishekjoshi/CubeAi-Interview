@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. Updated Enums
+enum CandidateStatus {
+  LINK_NOT_SENT
+  INTERVIEW_PENDING
+  INTERVIEW_COMPLETED
+  SELECTED
+  REJECTED
+}
+
+enum InterviewStatus {
+  PENDING
+  COMPLETED
+}
+
+// 2. Candidate Table
+model Candidate {
+  id         String          @id @default(uuid())
+  name       String
+  email      String          @unique
+  phone      String?
+  status     CandidateStatus @default(LINK_NOT_SENT)
+  interviews Interview[]     // One candidate can have multiple interview attempts
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+// 3. Interview Session Table
+model Interview {
+  id           String          @id @default(uuid())
+  candidateId  String
+  candidate    Candidate       @relation(fields: [candidateId], references: [id])
+  
+  status       InterviewStatus @default(PENDING)
+  token        String          @unique 
+  expiresAt    DateTime        
+  
+  // Assessment Results
+  overallScore   Float?
+  feedback       String?         
+  rubricScores   Json?           //  Json for clarity/warmth/accuracy
+  
+  // New Fields for Detailed Report
+  strengths      String[]        // Array of strings
+  improvements   String[]        // Array of strings
+  recommendation String?         // "PASS" or "FAIL"
+  
+  questions    Question[]
+  createdAt    DateTime        @default(now())
+}
+
+// 4. Questions/Transcript Table
+model Question {
+  id           String    @id @default(uuid())
+  interviewId  String
+  interview    Interview @relation(fields: [interviewId], references: [id])
+  
+  questionText String    @db.Text
+  answerText   String?   @db.Text
+  analysis     String?   // AI feedback on this specific answer
+  
+  createdAt    DateTime  @default(now())
+}

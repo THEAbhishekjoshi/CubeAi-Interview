@@ -1,0 +1,24 @@
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import CandidateDashboardPage from "@/pages/CandidateDashboardPage";  
+import InterviewRoom from "./pages/interviewRoom";
+import InterviewCompletionPage from "./pages/InterviewCompletionPage";
+import InterviewReportPage from "./pages/InterviewReportPage";
+
+
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/addcandidate" element={<CandidateDashboardPage />} />
+        <Route path="/interview/:interviewId/:token" element={<InterviewRoom />} />
+        <Route path="/interview-complete" element={<InterviewCompletionPage />} />
+        <Route path="/interview-report/:interviewId" element={<InterviewReportPage />} />
+        <Route path="/" element={<Navigate to="/addcandidate" replace />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
