@@ -75,8 +75,8 @@ const CandidateDashboardPage = () => {
         <h1 className="text-3xl montserrat-font">Candidates</h1>
 
         <AddCandidate handleSubmit={handleSubmit}>
-          <Button type="button">
-            <Plus className="size-4" />
+          <Button type="button" disabled={loading}>
+             {loading ? "Adding..." : <Plus className="size-4" />}
           </Button>
         </AddCandidate>
       </div>
