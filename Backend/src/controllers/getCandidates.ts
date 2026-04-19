@@ -14,7 +14,7 @@ const getCandidates = async (_req: Request, res: Response) => {
       },
     })
 
-    const formatted = candidates.map((candidate) => {
+    const formatted = candidates.map((candidate:any) => {
       const latestInterview = candidate.interviews[0]
 
       return {

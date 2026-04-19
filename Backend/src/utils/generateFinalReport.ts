@@ -19,8 +19,8 @@ export const generateFinalReport = async (interviewId: string) => {
 
         // 
         const transcript = interviewData.questions
-            .map((q, i) => `Q${i + 1}: ${q.questionText}\nA${i + 1}: ${q.answerText || "No answer provided."}`)
-            .join("\n\n")
+        // q is the question object (any), i is the index (number)
+        .map((q: any, i: number) => `Q${i + 1}: ${q.questionText}\nA${i + 1}: ${q.answerText || "No answer provided."}`)
 
         // 
         const systemPrompt = `You are a Senior Academic Recruiter at Cuemath. Your task is to evaluate a tutor candidate based on their interview transcript.
