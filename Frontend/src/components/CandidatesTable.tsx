@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/popover"
 import { MoreHorizontal } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 const StatusBadge = ({ status }: { status: string }) => {
   const getBadgeStyle = (status: string) => {
@@ -88,9 +89,11 @@ export function CandidatesTable({ data, setCandidatesData }: { data: Candidate[]
           
         )
         console.log(res.data.interviewLink)
+        toast.success("Link has been generated successfully")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating interview URL:", error)
+      toast.error(error?.response?.data?.message || "Failed to generate link. Please try again.")
     }
   }
 
