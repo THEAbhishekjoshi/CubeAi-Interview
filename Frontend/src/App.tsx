@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import CandidateDashboardPage from "@/pages/CandidateDashboardPage";  
 import InterviewRoom from "./pages/interviewRoom";
 import InterviewCompletionPage from "./pages/InterviewCompletionPage";
