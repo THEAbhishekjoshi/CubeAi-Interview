@@ -4,6 +4,7 @@ import CandidateDashboardPage from "@/pages/CandidateDashboardPage";
 import InterviewRoom from "./pages/interviewRoom";
 import InterviewCompletionPage from "./pages/InterviewCompletionPage";
 import InterviewReportPage from "./pages/InterviewReportPage";
+import HomePage from "./pages/HomePage";
 
 
 
@@ -15,7 +16,7 @@ function App() {
         <Route path="/interview/:interviewId/:token" element={<InterviewRoom />} />
         <Route path="/interview-complete" element={<InterviewCompletionPage />} />
         <Route path="/interview-report/:interviewId" element={<InterviewReportPage />} />
-        <Route path="/" element={<Navigate to="/addcandidate" replace />} />
+        <Route path="/" element={<HomePage />} />
       </Routes>
     </Router>
   );

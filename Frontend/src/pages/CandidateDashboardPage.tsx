@@ -5,6 +5,7 @@ import { AddCandidate } from "../components/AddCandidate"
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { MathParticles } from "../components/MathParticles"
 
 interface Candidate {
   id: string
@@ -22,7 +23,7 @@ const CandidateDashboardPage = () => {
 
   const fetchCandidates = async () => {
     const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/candidates`)
-
+    console.log(`res:${import.meta.env.VITE_API_URL}/api/candidates`)
     const formatted = res.data.data.map((candidate: any, index: number) => ({
       id: candidate.id,
       candidateName: candidate.name,
@@ -70,8 +71,9 @@ const CandidateDashboardPage = () => {
   }
 
   return (
-    <div className="py-6 px-8 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="py-6 px-8 space-y-6 relative min-h-screen">
+      <MathParticles />
+      <div className="relative z-10 flex justify-between items-center bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm">
         <h1 className="text-3xl montserrat-font">Candidates</h1>
 
         <AddCandidate handleSubmit={handleSubmit}>
@@ -81,7 +83,7 @@ const CandidateDashboardPage = () => {
         </AddCandidate>
       </div>
 
-      <div className="montserrat-font">
+      <div className="montserrat-font bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CandidatesTable data={candidates} setCandidatesData={setCandidates} />
       </div>
     </div>

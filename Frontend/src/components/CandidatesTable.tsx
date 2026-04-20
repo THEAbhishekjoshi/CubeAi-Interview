@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "./ui/button"
-import {  Copy, Check } from "lucide-react"
+import {  Copy, Check, Loader2 } from "lucide-react"
 import { useState } from "react"
 import axios from "axios"
 import {
@@ -18,6 +18,31 @@ import {
 } from "@/components/ui/popover"
 import { MoreHorizontal } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const getBadgeStyle = (status: string) => {
+    switch (status.toUpperCase()) {
+      case "PENDING":
+        return "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
+      case "COMPLETED":
+        return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+      case "SELECTED":
+      case "PASS":
+        return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
+      case "REJECTED":
+      case "FAIL":
+        return "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800"
+      default:
+        return "bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+    }
+  }
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getBadgeStyle(status)}`}>
+      {status}
+    </span>
+  )
+}
 
 interface Candidate {
   id: string
@@ -88,12 +113,14 @@ export function CandidatesTable({ data, setCandidatesData }: { data: Candidate[]
       <TableBody>
         {data.length > 0 ? (
           data.map((candidate, index) => (
-            <TableRow key={candidate.id}>
-              <TableCell>{index + 1}</TableCell>
-              <TableCell>{candidate.candidateName}</TableCell>
-              <TableCell>{candidate.email}</TableCell>
-              <TableCell>{candidate.phone || "-"}</TableCell>
-              <TableCell>{candidate.status}</TableCell>
+            <TableRow key={candidate.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <TableCell className="font-medium text-slate-500">{index + 1}</TableCell>
+              <TableCell className="font-semibold">{candidate.candidateName}</TableCell>
+              <TableCell className="text-slate-600 dark:text-slate-400">{candidate.email}</TableCell>
+              <TableCell className="text-slate-600 dark:text-slate-400">{candidate.phone || "-"}</TableCell>
+              <TableCell>
+                <StatusBadge status={candidate.status} />
+              </TableCell>
 
               <TableCell>
                 {candidate.interviewUrl ? (
@@ -167,8 +194,11 @@ export function CandidatesTable({ data, setCandidatesData }: { data: Candidate[]
           ))
         ) : (
           <TableRow>
-            <TableCell colSpan={7} className="text-center py-6">
-              Loading...
+            <TableCell colSpan={7} className="h-32 text-center">
+              <div className="flex flex-col items-center justify-center text-slate-500">
+                <Loader2 className="h-6 w-6 animate-spin mb-2 text-slate-400" />
+                <p>Loading candidates...</p>
+              </div>
             </TableCell>
           </TableRow>
         )}

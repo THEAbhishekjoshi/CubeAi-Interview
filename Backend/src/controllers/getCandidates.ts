@@ -30,7 +30,7 @@ const getCandidates = async (_req: Request, res: Response) => {
               token: latestInterview.token,
               status: latestInterview.status,
               expiresAt: latestInterview.expiresAt,
-              interviewUrl: `${process.env.FRONTEND_URL}/interview/${latestInterview.token}`,
+              interviewUrl: `${process.env.FRONTEND_URL}/interview/${latestInterview.id}/${latestInterview.token}`,
             }
           : null,
       }
