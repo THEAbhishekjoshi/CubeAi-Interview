@@ -15,6 +15,10 @@ interface InterviewPanelProps {
 
 const InterviewPanel = ({ videoStatus, stream, candidateName }: InterviewPanelProps) => {
 
+  const [isCalibrating, setIsCalibrating] = useState(true)
+  const [calibrationProgress, setCalibrationProgress] = useState(0)
+  const silenceThresholdRef = useRef(18)
+
   const [status, setStatus] = useState('speaking') // 'speaking', 'listening', 'thinking'
   const [aiQuestion, setAiQuestion] = useState("...")
   const [candidateTranscript, setCandidateTranscript] = useState("")
@@ -65,6 +69,59 @@ const InterviewPanel = ({ videoStatus, stream, candidateName }: InterviewPanelPr
       setIsEnding(false)
     }
   }, [interviewId, navigate])
+
+  // Calibration Effect
+  useEffect(() => {
+    if (!stream || !isCalibrating) return
+
+    let progress = 0
+    const interval = setInterval(() => {
+      progress += 5
+      setCalibrationProgress(progress)
+      if (progress >= 100) {
+        clearInterval(interval)
+      }
+    }, 150) // 3 seconds total
+
+    const audioCtx = new AudioContext()
+    const source = audioCtx.createMediaStreamSource(stream)
+    const analyser = audioCtx.createAnalyser()
+    analyser.fftSize = 256
+    source.connect(analyser)
+    const bufferLength = analyser.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength);
+
+    let totalVol = 0
+    let samples = 0
+    let isActive = true
+
+    const measure = () => {
+      if (!isActive) return;
+      analyser.getByteFrequencyData(dataArray)
+      const sum = dataArray.reduce((a, b) => a + b, 0)
+      const avg = sum / bufferLength
+      totalVol += avg
+      samples++
+
+      if (progress < 100) {
+        requestAnimationFrame(measure)
+      } else {
+        const baseline = totalVol / samples
+        console.log("Calibration complete. Baseline:", baseline)
+        // Set threshold slightly above baseline
+        silenceThresholdRef.current = Math.max(15, baseline + 4)
+        setIsCalibrating(false)
+        audioCtx.close()
+      }
+    }
+    measure()
+
+    return () => {
+      isActive = false
+      clearInterval(interval)
+      if (audioCtx.state !== 'closed') audioCtx.close()
+    }
+  }, [stream, isCalibrating])
 
   // Timer Effect
   useEffect(() => {
@@ -160,10 +217,10 @@ const InterviewPanel = ({ videoStatus, stream, candidateName }: InterviewPanelPr
       // calculate the average volume 
       const sum = dataArray.reduce((a, b) => a + b, 0)
       const averageVol = sum / bufferLength
-      const SILENCE_THRESHOLD = 18
+      const SILENCE_THRESHOLD = silenceThresholdRef.current
 
       if (averageVol > SILENCE_THRESHOLD) {
-        console.log("Voice detected, volume:", averageVol)
+        console.log("Voice detected, volume:", averageVol, "threshold:", SILENCE_THRESHOLD)
         resetSilenceTimer()
       }
       rafIdRef.current = requestAnimationFrame(checkSilence)
@@ -281,6 +338,8 @@ const InterviewPanel = ({ videoStatus, stream, candidateName }: InterviewPanelPr
   }, [status, aiQuestion])
 
   useEffect(() => {
+    if (isCalibrating) return; // Wait for calibration to finish
+
     // connect to Socket.IO server
     socketRef.current = io(import.meta.env.VITE_API_URL)
 
@@ -300,7 +359,7 @@ const InterviewPanel = ({ videoStatus, stream, candidateName }: InterviewPanelPr
     return () => {
       if (socketRef.current) socketRef.current.disconnect()
     }
-  }, [interviewId])
+  }, [interviewId, isCalibrating])
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -312,9 +371,29 @@ const InterviewPanel = ({ videoStatus, stream, candidateName }: InterviewPanelPr
 
   return (
     <div className="flex h-screen w-full bg-[#F8FAFC] font-sans text-slate-900">
+      {/* --- BLURRY LOADING OVERLAY FOR CALIBRATION --- */}
+      {isCalibrating && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-md bg-white/80 transition-all duration-500">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-md w-full text-center">
+            <Mic className="w-12 h-12 text-orange-500 mb-4 animate-pulse" />
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">Room Calibration</h2>
+            <p className="text-slate-500 mb-6 text-sm">
+              Please remain quiet for a few seconds. We are measuring the background noise in your room to optimize the AI's hearing...
+            </p>
+            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div
+                className="bg-orange-500 h-full transition-all duration-200 ease-out"
+                style={{ width: `${calibrationProgress}%` }}
+              />
+            </div>
+            <p className="mt-4 text-xs font-bold text-slate-400">{Math.min(100, calibrationProgress)}%</p>
+          </div>
+        </div>
+      )}
+
       {/* --- BLURRY LOADING OVERLAY --- */}
       {isEnding && (
-        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center backdrop-blur-md bg-white/30 transition-all duration-500">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-md bg-white/30 transition-all duration-500">
           <div className="relative w-20 h-20 mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-slate-200 border-t-orange-500 animate-spin" />
           </div>
